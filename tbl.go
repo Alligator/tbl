@@ -28,9 +28,16 @@ func (t *Table) NewRow() {
 	t.currentCols = 0
 }
 
+func (t *Table) getRow() *[]strings.Builder {
+	if len(t.rows) == 0 {
+		t.NewRow()
+	}
+	return &t.rows[len(t.rows)-1]
+}
+
 // NewCol adds a column with the given name to the current row
 func (t *Table) NewCol(name string) {
-	curRow := &t.rows[len(t.rows)-1]
+	curRow := t.getRow()
 	*curRow = append(*curRow, strings.Builder{})
 	t.colNames[t.currentCols] = name
 	t.currentCols++
@@ -41,7 +48,7 @@ func (t *Table) NewCol(name string) {
 
 // Print s to the current column
 func (t *Table) Print(s string) {
-	curRow := &t.rows[len(t.rows)-1]
+	curRow := t.getRow()
 	(*curRow)[len(*curRow)-1].WriteString(s)
 }
 
