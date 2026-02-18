@@ -2,6 +2,8 @@
 
 tbl is a simple way to print text tables.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/alligator/tbl.svg)](https://pkg.go.dev/github.com/alligator/tbl)
+
 ## Installing
 
 ```
