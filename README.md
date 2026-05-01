@@ -47,3 +47,27 @@ func main() {
 	fmt.Print(t.String())
 }
 ```
+
+This will print this table:
+
+```
+| Id | Name |
+| -- | ---- |
+| 1  | gate |
+| 2  | boop |
+```
+
+There is also a minimal style, with no column and row separators. Use it like so:
+
+```go
+t := tbl.NewTable()
+t.Style = tbl.StyleMinimal
+```
+
+Minimal tables looks like this:
+
+```
+ID  NAME
+1   gate
+2   boop
+```
