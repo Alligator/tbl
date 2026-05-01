@@ -11,13 +11,33 @@ type row struct {
 }
 
 func TestTbl(t *testing.T) {
+	tbl := NewTable()
+	expected := `| id | name                 |
+| -- | -------------------- |
+| 1  | gate (owner)         |
+| 2  | tooty (contributor)  |
+| 3  | sponge (contributor) |
+`
+	test(t, tbl, expected)
+}
+
+func TestTblMinimal(t *testing.T) {
+	tbl := NewTable()
+	tbl.Style = StyleMinimal
+	expected := `ID  NAME
+1   gate (owner)
+2   tooty (contributor)
+3   sponge (contributor)
+`
+	test(t, tbl, expected)
+}
+
+func test(t *testing.T, table *Table, expected string) {
 	rows := []row{
 		{"1", "gate", "owner"},
 		{"2", "tooty", "contributor"},
 		{"3", "sponge", "contributor"},
 	}
-
-	table := NewTable()
 
 	for _, r := range rows {
 		table.NewRow()
@@ -29,13 +49,6 @@ func TestTbl(t *testing.T) {
 	}
 
 	result := table.String()
-	expected := `| id | name                 |
-| -- | -------------------- |
-| 1  | gate (owner)         |
-| 2  | tooty (contributor)  |
-| 3  | sponge (contributor) |
-`
-
 	if result != expected {
 		t.Errorf("result (len %d)\n%s\ndoes not match expected (len %d)\n%s\n", len(result), result, len(expected), expected)
 	}

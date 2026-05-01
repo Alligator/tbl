@@ -7,15 +7,48 @@ import (
 	"strings"
 )
 
+type TableStyle uint8
+
+const (
+	StyleDefault TableStyle = iota
+	StyleMinimal
+)
+
 type Table struct {
+	Style       TableStyle
 	rows        [][]strings.Builder
 	colNames    []string
 	currentCols int
 	maxCols     int
 }
 
+type styleProps struct {
+	colStart        string
+	colSep          string
+	colEnd          string
+	headerSep       string
+	uppercaseHeader bool
+}
+
+var styles map[TableStyle]styleProps = map[TableStyle]styleProps{
+	StyleDefault: {
+		colStart:  "| ",
+		colSep:    " | ",
+		colEnd:    " |",
+		headerSep: "-",
+	},
+	StyleMinimal: {
+		colStart:        "",
+		colSep:          "  ",
+		colEnd:          "",
+		headerSep:       "",
+		uppercaseHeader: true,
+	},
+}
+
 func NewTable() *Table {
 	return &Table{
+		Style:    StyleDefault,
 		rows:     make([][]strings.Builder, 0),
 		colNames: make([]string, 32),
 	}
@@ -88,36 +121,53 @@ func (t *Table) String() string {
 
 	var sb strings.Builder
 
+	styl := styles[t.Style]
+
 	// header
-	sb.WriteString("| ")
+	sb.WriteString(styl.colStart)
 	for i := range colWidths {
-		sb.WriteString(fmt.Sprintf("%-*s |", colWidths[i], t.colNames[i]))
+		header := t.colNames[i]
+		if styl.uppercaseHeader {
+			header = strings.ToUpper(header)
+		}
+
 		if i < len(colWidths)-1 {
-			sb.WriteRune(' ')
+			sb.WriteString(fmt.Sprintf("%-*s%s", colWidths[i], header, styl.colSep))
+		} else if len(styl.colEnd) > 0 {
+			sb.WriteString(fmt.Sprintf("%-*s%s", colWidths[i], header, styl.colEnd))
+		} else {
+			sb.WriteString(header)
 		}
 	}
 	sb.WriteString("\n")
 
-	sb.WriteString("| ")
-	for i := range colWidths {
-		sb.WriteString(strings.Repeat("-", colWidths[i]))
-		sb.WriteString(" |")
-		if i < len(colWidths)-1 {
-			sb.WriteRune(' ')
+	if len(styl.headerSep) > 0 {
+		sb.WriteString(styl.colStart)
+		for i := range colWidths {
+			sb.WriteString(strings.Repeat(styl.headerSep, colWidths[i]))
+			if i < len(colWidths)-1 {
+				sb.WriteString(styl.colSep)
+			}
 		}
+		sb.WriteString(styl.colEnd)
+		sb.WriteString("\n")
 	}
-	sb.WriteString("\n")
 
 	// body
 	for _, row := range t.rows {
-		sb.WriteString("| ")
+		sb.WriteString(styl.colStart)
 		for i, col := range row {
 			s := col.String()
 			lwe := lenWithoutEscapes(s)
 			w := colWidths[i] + (len(s) - lwe)
-			sb.WriteString(fmt.Sprintf("%-*s |", w, s))
-			if i < len(row)-1 {
-				sb.WriteRune(' ')
+			if i < len(colWidths)-1 {
+				sb.WriteString(fmt.Sprintf("%-*s", w, s))
+				sb.WriteString(styl.colSep)
+			} else if len(styl.colEnd) > 0 {
+				sb.WriteString(fmt.Sprintf("%-*s", w, s))
+				sb.WriteString(styl.colEnd)
+			} else {
+				sb.WriteString(s)
 			}
 		}
 		sb.WriteString("\n")
